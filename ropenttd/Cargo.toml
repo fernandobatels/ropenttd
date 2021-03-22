@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 rust-lzma = "0.5.1"
+bytes = "1.0.1"
+subslice = "0.2.2"
