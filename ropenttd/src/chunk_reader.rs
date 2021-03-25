@@ -59,7 +59,7 @@ impl ChunkDataReader<u8> for u8 {
     fn fetch(raw: &mut Bytes) -> Result<u8, Error> {
 
         let tp = raw.get_u8() & 0xF;
-        if tp != 1 { // U8
+        if tp != 1 { // SLE_FILE_I8
             return Err(Error::UnexpectedValueType(tp));
         }
 
@@ -71,10 +71,24 @@ impl ChunkDataReader<u16> for u16 {
     fn fetch(raw: &mut Bytes) -> Result<u16, Error> {
 
         let tp = raw.get_u8() & 0xF;
-        if tp != 3 { // U16
+        if tp != 3 { // SLE_FILE_U16
             return Err(Error::UnexpectedValueType(tp));
         }
 
         Ok(raw.get_u16())
+    }
+}
+
+impl ChunkDataReader<String> for String {
+    fn fetch(raw: &mut Bytes) -> Result<String, Error> {
+
+        raw.advance(3); // Some bytes not understood yet
+
+        let len = raw.get_u8() as usize;
+        let strb = raw.copy_to_bytes(len);
+
+        let stru = str::from_utf8(&strb)?;
+
+        Ok(stru.to_string())
     }
 }
