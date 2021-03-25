@@ -1,9 +1,6 @@
 //! Company related types
 
-use subslice::bmh;
-use bytes::{Bytes, Buf};
-use std::str;
-
+use crate::chunk_reader::ChunkReader;
 use crate::error::Error;
 
 /// Company informations
@@ -16,6 +13,13 @@ impl CompanyInfo {
     /// Parse the company information
     pub fn parse(buffer: &Vec<u8>) -> Result<CompanyInfo, Error> {
 
+        let mut chunk = ChunkReader::find(buffer, "PLYR")?;
+
+        println!("name2 {:?}", chunk.fetch::<u8>());
+        println!("name1 {:?}", chunk.fetch::<u16>());
+        //println!("name1 {:?}", chunk.fetch::<u8>());
+
+        /*
         let pos_init = match bmh::find(buffer, "PLYR".as_bytes()) {
             Some(pos) => Ok(pos),
             None => Err(Error::ChunkNotFound("PLYR".to_string()))
@@ -44,7 +48,7 @@ impl CompanyInfo {
         let name = company_chunk.copy_to_bytes(name_len);
         println!("{:?}", &name);
         println!("name val: {:?}", str::from_utf8(&name));
-
+*/
         todo!("??")
     }
 }

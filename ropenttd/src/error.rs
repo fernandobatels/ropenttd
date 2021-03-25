@@ -3,6 +3,7 @@
 use std::fmt;
 use std::io::Error as IoError;
 use lzma::LzmaError;
+use std::sync::PoisonError;
 
 #[derive(Debug)]
 pub enum Error {
@@ -12,8 +13,14 @@ pub enum Error {
     Decompress(String),
     /// Chunk of data not found
     ChunkNotFound(String),
+    /// Chunk, or chunk format, is not supported
+    ChunkNotSupported(String),
     /// Data is corrupted
-    DataCorruption(String)
+    DataCorruption(String),
+    /// Fail on lock the chunk
+    ChunkLockError,
+    /// Unexpected fetched value type
+    UnexpectedValueType(u8)
 }
 
 impl From<LzmaError> for Error {
@@ -31,13 +38,22 @@ impl From<IoError> for Error {
     }
 }
 
+impl From<PoisonError<&mut bytes::Bytes>> for Error {
+    fn from(_e: PoisonError<&mut bytes::Bytes>) -> Self {
+        Self::ChunkLockError
+    }
+}
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match self {
-            Error::ChunkNotFound(e) => e,
-            Error::Load(e) => e,
-            Error::DataCorruption(e) => e,
-            Error::Decompress(e) => e
+            Error::UnexpectedValueType(tp) => format!("type fetched: {}", tp),
+            Error::ChunkLockError => "Error on lock the chunk".to_string(),
+            Error::ChunkNotFound(id) => format!("chunk id: {}", id),
+            Error::ChunkNotSupported(id) => format!("chunk id: {}", id),
+            Error::Load(e) => e.to_string(),
+            Error::DataCorruption(e) => e.to_string(),
+            Error::Decompress(e) => e.to_string()
         })
     }
 }

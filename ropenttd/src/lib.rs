@@ -8,6 +8,7 @@ mod format;
 mod save;
 mod error;
 mod company;
+mod chunk_reader;
 
 pub use format::Format;
 pub use save::SaveGame;
