@@ -40,6 +40,17 @@ impl ChunkReader {
         })
     }
 
+    /// Advance de cursor to the next value
+    /// without return anything
+    pub fn advance<T>(&mut self) -> Result<(), Error>
+        where T: ChunkDataReader<T>
+    {
+        match self.fetch::<T>() {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e)
+        }
+    }
+
     /// Fetch the next value from chunk
     pub fn fetch<T>(&mut self) -> Result<T, Error>
         where T: ChunkDataReader<T>
