@@ -17,8 +17,8 @@ impl CompanyInfo {
 
         // Fields from https://github.com/OpenTTD/OpenTTD/blob/master/src/saveload/company_sl.cpp#L242
 
-        chunk.advance::<u8>()?; // name2
-        chunk.advance::<u16>()?; // name1
+        chunk.advance::<u8>()?; // name_2
+        chunk.advance::<u16>()?; // name_1
 
         let name = chunk.fetch::<String>()?; // name
 
