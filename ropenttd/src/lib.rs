@@ -9,6 +9,7 @@ mod save;
 mod error;
 mod company;
 mod chunk_reader;
+mod string_reader;
 
 pub use format::Format;
 pub use save::SaveGame;

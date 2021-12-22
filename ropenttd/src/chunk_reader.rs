@@ -35,6 +35,8 @@ impl ChunkReader {
         let mut chunk = Bytes::copy_from_slice(&chunk);
         chunk.advance(5); // chunk id + chunk type
 
+        chunk.advance(2); // Some bytes not understood yet
+
         Ok(ChunkReader {
             raw: Mutex::new(chunk)
         })
@@ -66,34 +68,50 @@ pub trait ChunkDataReader<T> {
     fn fetch(raw: &mut Bytes) -> Result<T, Error>;
 }
 
+/// SLE_FILE_I8
+impl ChunkDataReader<i8> for i8 {
+    fn fetch(raw: &mut Bytes) -> Result<i8, Error> {
+        Ok(raw.get_i8())
+    }
+}
+
+/// SLE_FILE_U8
 impl ChunkDataReader<u8> for u8 {
     fn fetch(raw: &mut Bytes) -> Result<u8, Error> {
-
-        let tp = raw.get_u8() & 0xF;
-        if tp != 1 { // SLE_FILE_I8
-            return Err(Error::UnexpectedValueType(tp));
-        }
-
         Ok(raw.get_u8())
     }
 }
 
+/// SLE_FILE_I16
+impl ChunkDataReader<i16> for i16 {
+    fn fetch(raw: &mut Bytes) -> Result<i16, Error> {
+        Ok(raw.get_i16())
+    }
+}
+
+/// SLE_FILE_U16
 impl ChunkDataReader<u16> for u16 {
     fn fetch(raw: &mut Bytes) -> Result<u16, Error> {
-
-        let tp = raw.get_u8() & 0xF;
-        if tp != 3 { // SLE_FILE_U16
-            return Err(Error::UnexpectedValueType(tp));
-        }
-
         Ok(raw.get_u16())
+    }
+}
+
+/// SLE_FILE_I32
+impl ChunkDataReader<i32> for i32 {
+    fn fetch(raw: &mut Bytes) -> Result<i32, Error> {
+        Ok(raw.get_i32())
+    }
+}
+
+/// SLE_FILE_U32
+impl ChunkDataReader<u32> for u32 {
+    fn fetch(raw: &mut Bytes) -> Result<u32, Error> {
+        Ok(raw.get_u32())
     }
 }
 
 impl ChunkDataReader<String> for String {
     fn fetch(raw: &mut Bytes) -> Result<String, Error> {
-
-        raw.advance(3); // Some bytes not understood yet
 
         let len = raw.get_u8() as usize;
         let strb = raw.copy_to_bytes(len);

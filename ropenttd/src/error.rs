@@ -22,7 +22,7 @@ pub enum Error {
     /// Fail on lock the chunk
     ChunkLockError,
     /// Unexpected fetched value type
-    UnexpectedValueType(u8),
+    UnexpectedValueType(u8, u8),
     /// UTF8 Decode
     Utf8Decode(String)
 }
@@ -64,7 +64,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match self {
             Error::Utf8Decode(e) => format!("Found a value with an invalid UTF-8 string: {}", e),
-            Error::UnexpectedValueType(tp) => format!("type fetched: {}", tp),
+            Error::UnexpectedValueType(exp, get) => format!("type fetched {}, expected {}", get, exp),
             Error::ChunkLockError => "Error on lock the chunk".to_string(),
             Error::ChunkNotFound(id) => format!("chunk id: {}", id),
             Error::ChunkNotSupported(id) => format!("chunk id: {}", id),
