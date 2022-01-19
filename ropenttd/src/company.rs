@@ -2,7 +2,7 @@
 
 use crate::chunk_reader::ChunkReader;
 use crate::error::Error;
-use crate::string_reader as sr;
+use crate::string_reader::*;
 
 /// Company informations
 pub struct CompanyInfo {
@@ -19,12 +19,12 @@ impl CompanyInfo {
         // Fields from https://github.com/OpenTTD/OpenTTD/blob/master/src/saveload/company_sl.cpp#L242
 
         let name2 = chunk.fetch::<u32>()?; // name_2
-        let name1 = chunk.fetch::<u16>()?; // name_1
+        let name1 = chunk.fetch::<StringID>()?; // name_1
 
         let mut name = chunk.fetch::<String>()?; // name
 
         if name.is_empty() {
-            name = sr::get_string(name1, name2)?;
+            name = OpenString::new(name1, name2).to_string()?;
         }
 
         Ok(CompanyInfo {

@@ -15,3 +15,4 @@ pub use format::Format;
 pub use save::SaveGame;
 pub use company::Company;
 pub use error::Error;
+pub use string_reader::OpenString;

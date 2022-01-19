@@ -1,32 +1,54 @@
 //! Openttd strings related API
 //!
-//! Functions foo read the strings from the
+//! Functions for read the strings from the
 //! OpenTTD implementation.
-
 
 use crate::error::Error;
 
 /// Number of bits for the StringIndex within a StringTab
 static TAB_SIZE_BITS: u8 = 11;
 
-/// Read the string by an StringID
-pub fn get_string(id: u16, id_param: u32) -> Result<String, Error> {
+pub type StringID = u16;
+pub type StringTab = u16;
 
-    let index = get_string_index(id);
-    let tab = get_string_tab(id);
-
-    println!("{0} {1} {2} {3} {4}", id, index, tab, id_param, index - 0xC0);
-
-    todo!()
+pub struct OpenString {
+    id: StringID,
+    id_param: u32,
+    index: u16,
+    tab: StringTab
 }
 
-/// Extract the StringIndex from a StringID
-fn get_string_index(id: u16) -> u16 {
+impl OpenString {
+
+    pub fn new(id: StringID, id_param: u32) -> OpenString {
+
+        let index = get_string_index(id);
+        let tab = get_string_tab(id);
+
+        OpenString {
+            id,
+            id_param,
+            index,
+            tab
+        }
+    }
+
+    /// Read the string by an StringID
+    pub fn to_string(self) -> Result<String, Error> {
+
+        println!("{0} {1} {2} {3} {4}", self.id, self.index, self.tab, self.id_param, self.index - 0xE4);
+
+        todo!()
+    }
+}
+
+/// Extract the string index from a StringID
+fn get_string_index(id: StringID) -> u16 {
 	  id - (get_string_tab(id) << TAB_SIZE_BITS)
 }
 
 /// Extract the StringTab from a StringID
-fn get_string_tab(id: u16) -> u16 {
+fn get_string_tab(id: StringID) -> StringTab {
     let tab = id >> TAB_SIZE_BITS;
 
     match tab {
