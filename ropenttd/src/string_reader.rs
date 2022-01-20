@@ -4,6 +4,7 @@
 //! OpenTTD implementation.
 
 use crate::error::Error;
+use crate::names_generators::*;
 
 /// Number of bits for the StringIndex within a StringTab
 static TAB_SIZE_BITS: u8 = 11;
@@ -12,10 +13,10 @@ pub type StringID = u16;
 pub type StringTab = u16;
 
 pub struct OpenString {
-    id: StringID,
-    id_param: u32,
-    index: u16,
-    tab: StringTab
+    pub id: StringID,
+    pub id_param: u32,
+    pub index: u16,
+    pub tab: StringTab
 }
 
 impl OpenString {
@@ -35,10 +36,26 @@ impl OpenString {
 
     /// Read the string by an StringID
     pub fn to_string(self) -> Result<String, Error> {
+        match self.tab {
+            // TEXT_TAB_SPECIAL
+            14 => self.to_special_string(),
+            _ => unimplemented!("String tab {}", self.tab)
+        }
+    }
 
-        println!("{0} {1} {2} {3} {4}", self.id, self.index, self.tab, self.id_param, self.index - 0xE4);
+    /// Special string generation
+    fn to_special_string(self) -> Result<String, Error> {
+        let tp = self.index - 0xE4;
 
-        todo!()
+        match tp {
+            // Foobar & Co company names
+            2 => todo!("Foobar & Co company names"),
+            // President name
+            3 => todo!("President name"),
+            // Town name
+            6 => TownName::generate(tp - 6, self.id_param),
+            _ => unimplemented!("Special string, type {}", tp)
+        }
     }
 }
 

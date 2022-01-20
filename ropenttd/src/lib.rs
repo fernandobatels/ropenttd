@@ -10,9 +10,9 @@ mod error;
 mod company;
 mod chunk_reader;
 mod string_reader;
+mod names_generators;
 
 pub use format::Format;
 pub use save::SaveGame;
 pub use company::Company;
 pub use error::Error;
-pub use string_reader::OpenString;
