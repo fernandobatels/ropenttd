@@ -39,7 +39,7 @@ impl OpenString {
         match self.tab {
             // TEXT_TAB_SPECIAL
             14 => self.to_special_string(),
-            _ => unimplemented!("String tab {}", self.tab)
+            _ => Err(Error::TypeNotSupportedYet("String tab".to_string(), self.tab))
         }
     }
 
@@ -48,13 +48,9 @@ impl OpenString {
         let tp = self.index - 0xE4;
 
         match tp {
-            // Foobar & Co company names
-            2 => todo!("Foobar & Co company names"),
-            // President name
-            3 => todo!("President name"),
             // Town name
             6 => TownName::generate(tp - 6, self.id_param),
-            _ => unimplemented!("Special string, type {}", tp)
+            _ => Err(Error::TypeNotSupportedYet("Special string".to_string(), tp))
         }
     }
 }

@@ -24,7 +24,9 @@ pub enum Error {
     /// Unexpected fetched value type
     UnexpectedValueType(u8, u8),
     /// UTF8 Decode
-    Utf8Decode(String)
+    Utf8Decode(String),
+    /// Type not supported yet
+    TypeNotSupportedYet(String, u16)
 }
 
 impl From<LzmaError> for Error {
@@ -70,7 +72,8 @@ impl fmt::Display for Error {
             Error::ChunkNotSupported(id) => format!("chunk id: {}", id),
             Error::Load(e) => e.to_string(),
             Error::DataCorruption(e) => e.to_string(),
-            Error::Decompress(e) => e.to_string()
+            Error::Decompress(e) => e.to_string(),
+            Error::TypeNotSupportedYet(kind, tp) => format!("The {} is not supported by {} yet", tp, kind)
         })
     }
 }
