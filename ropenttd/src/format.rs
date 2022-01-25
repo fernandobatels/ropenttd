@@ -15,10 +15,10 @@ pub enum Format {
 
 impl Format {
 
-    /// Identify the fiel save format/type.
+    /// Identify the save game format/type.
     ///
-    /// Non identifield or support types will
-    /// raise an error.
+    /// Non identifield or supported types will
+    /// return an error.
     pub fn identify(tag: [u8; 4]) -> Result<Format, Error> {
         match tag {
             [0x4f, 0x54, 0x54, 0x58] => Ok(Format::Ottx),

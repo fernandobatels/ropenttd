@@ -35,7 +35,7 @@ impl CompanyInfo {
 
 /// Company access
 pub trait Company {
-    /// Return the compnay details/information
+    /// Return the company details/information
     fn company(&mut self) -> Result<CompanyInfo, Error>;
 }
 

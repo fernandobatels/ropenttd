@@ -1,7 +1,7 @@
 //!
 //! OpenTTD reader
 //!
-//! Lib to work with OpenTTD save files
+//! A crate to read the OpenTTD save files
 //!
 
 mod format;
@@ -15,5 +15,5 @@ mod table;
 
 pub use format::Format;
 pub use save::SaveGame;
-pub use company::Company;
+pub use company::{Company, CompanyInfo};
 pub use error::Error;

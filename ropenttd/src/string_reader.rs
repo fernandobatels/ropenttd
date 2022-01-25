@@ -1,6 +1,6 @@
 //! Openttd strings related API
 //!
-//! Functions for read the strings from the
+//! Functions to read the strings from the
 //! OpenTTD implementation.
 
 use crate::error::Error;
