@@ -3,7 +3,7 @@
 use std::io::BufReader;
 use std::fs::File;
 
-use openttd::*;
+use ropenttd::*;
 
 fn main() -> Result<(), String> {
 

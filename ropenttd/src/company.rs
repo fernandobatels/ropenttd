@@ -16,7 +16,7 @@ impl CompanyInfo {
 
         let mut chunk = ChunkReader::find(buffer, "PLYR")?; // 50 4c 59 52
 
-        // Fields from https://github.com/OpenTTD/OpenTTD/blob/master/src/saveload/company_sl.cpp#L242
+        // Fields from https://github.com/OpenTTD/OpenTTD/blob/9e47df298faf6889c8be7dd0b0eeedeb65db1cdc/src/saveload/company_sl.cpp#L444
 
         let name2 = chunk.fetch::<u32>()?; // name_2
         let name1 = chunk.fetch::<StringID>()?; // name_1

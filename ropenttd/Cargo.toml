@@ -1,5 +1,5 @@
 [package]
-name = "openttd"
+name = "ropenttd"
 version = "0.1.0"
 authors = ["Luis Fernando Batels <luisfbatels@gmail.com>"]
 edition = "2021"
