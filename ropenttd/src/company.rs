@@ -6,7 +6,8 @@ use crate::string_reader::*;
 
 /// Company informations
 pub struct CompanyInfo {
-    pub name: String
+    pub name: String,
+    pub president: String
 }
 
 impl CompanyInfo {
@@ -18,17 +19,35 @@ impl CompanyInfo {
 
         // Fields from https://github.com/OpenTTD/OpenTTD/blob/9e47df298faf6889c8be7dd0b0eeedeb65db1cdc/src/saveload/company_sl.cpp#L444
 
-        let name2 = chunk.fetch::<u32>()?; // name_2
-        let name1 = chunk.fetch::<StringID>()?; // name_1
+        // Company name
+        let name = {
+            let name2 = chunk.fetch::<u32>()?; // name_2
+            let name1 = chunk.fetch::<StringID>()?; // name_1
+            let name = chunk.fetch::<String>()?; // name
 
-        let mut name = chunk.fetch::<String>()?; // name
+            if !name.is_empty() {
+                name
+            } else {
+                OpenString::new(name1, name2).to_string()?
+            }
+        };
 
-        if name.is_empty() {
-            name = OpenString::new(name1, name2).to_string()?;
-        }
+        // President name
+        let president = {
+            let name1 = chunk.fetch::<StringID>()?; // president_name_1
+            let name2 = chunk.fetch::<u32>()?; // president_name_2
+            let name = chunk.fetch::<String>()?; // president_name
+
+            if !name.is_empty() {
+                name
+            } else {
+                OpenString::new(name1, name2).to_string()?
+            }
+        };
 
         Ok(CompanyInfo {
-            name
+            name,
+            president
         })
     }
 }
@@ -54,6 +73,7 @@ mod test {
             .map_err(|e| e.to_string())?;
 
         assert_eq!("Petfield Transport 2".to_string(), company.name);
+        assert_eq!("D. Nelson".to_string(), company.president);
 
         Ok(())
     }
@@ -68,6 +88,7 @@ mod test {
             .map_err(|e| e.to_string())?;
 
         assert_eq!("Petfield Transport".to_string(), company.name);
+        assert_eq!("D. Nelson".to_string(), company.president);
 
         Ok(())
     }

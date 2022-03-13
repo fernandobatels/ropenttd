@@ -1,0 +1,2 @@
+//! Openttd persons names table
+

@@ -2,8 +2,10 @@
 
 use crate::error::Error;
 
-mod townname;
-pub use townname::TownName;
+mod town;
+mod president;
+pub use town::TownName;
+pub use president::PresidentName;
 
 pub type NameLanguage = u16;
 

@@ -48,6 +48,8 @@ impl OpenString {
         let tp = self.index - 0xE4;
 
         match tp {
+            // President name
+            3 => PresidentName::generate(0, self.id_param),
             // Town name
             6 => TownName::generate(tp - 6, self.id_param),
             _ => Err(Error::TypeNotSupportedYet("Special string".to_string(), tp))
