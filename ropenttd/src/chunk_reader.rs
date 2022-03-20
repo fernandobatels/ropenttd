@@ -44,6 +44,7 @@ impl ChunkReader {
 
     /// Advance de cursor to the next value
     /// without return anything
+    #[allow(dead_code)]
     pub fn advance<T>(&mut self) -> Result<(), Error>
         where T: ChunkDataReader<T>
     {

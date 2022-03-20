@@ -3,6 +3,7 @@
 use crate::error::Error;
 use crate::table::townname as table;
 use super::{NameGeneration, NameLanguage};
+use crate::seeds;
 
 pub struct TownName {}
 
@@ -25,42 +26,22 @@ impl TownName {
         let mut name = String::new();
 
         // First segment(optional)
-        if let Some(fi) = seed_chance_bias(0, table::NAME_ORIGINAL_ENGLISH_1.len(), seed, 50) {
+        if let Some(fi) = seeds::seed_chance_bias(0, table::NAME_ORIGINAL_ENGLISH_1.len(), seed, 50) {
             name.push_str(table::NAME_ORIGINAL_ENGLISH_1[fi]);
         }
 
 	      // Middle segments
-	      name.push_str(table::NAME_ORIGINAL_ENGLISH_2[seed_chance(4, table::NAME_ORIGINAL_ENGLISH_2.len(), seed)]);
-	      name.push_str(table::NAME_ORIGINAL_ENGLISH_3[seed_chance(7, table::NAME_ORIGINAL_ENGLISH_3.len(), seed)]);
-	      name.push_str(table::NAME_ORIGINAL_ENGLISH_4[seed_chance(10, table::NAME_ORIGINAL_ENGLISH_4.len(), seed)]);
-	      name.push_str(table::NAME_ORIGINAL_ENGLISH_5[seed_chance(13, table::NAME_ORIGINAL_ENGLISH_5.len(), seed)]);
+	      name.push_str(table::NAME_ORIGINAL_ENGLISH_2[seeds::seed_chance(4, table::NAME_ORIGINAL_ENGLISH_2.len(), seed)]);
+	      name.push_str(table::NAME_ORIGINAL_ENGLISH_3[seeds::seed_chance(7, table::NAME_ORIGINAL_ENGLISH_3.len(), seed)]);
+	      name.push_str(table::NAME_ORIGINAL_ENGLISH_4[seeds::seed_chance(10, table::NAME_ORIGINAL_ENGLISH_4.len(), seed)]);
+	      name.push_str(table::NAME_ORIGINAL_ENGLISH_5[seeds::seed_chance(13, table::NAME_ORIGINAL_ENGLISH_5.len(), seed)]);
 
         // Last segment(optional)
-        if let Some(fi) = seed_chance_bias(15, table::NAME_ORIGINAL_ENGLISH_6.len(), seed, 60) {
+        if let Some(fi) = seeds::seed_chance_bias(15, table::NAME_ORIGINAL_ENGLISH_6.len(), seed, 60) {
             name.push_str(table::NAME_ORIGINAL_ENGLISH_6[fi]);
         }
 
         name
-    }
-}
-
-/// Return the an index number from given seed
-fn seed_chance(shift_by: u8, max: usize, seed: u32) -> usize {
-    // Fetch some bits from the seed
-    let gb = (seed >> shift_by) & ((1 << 16) - 1);
-
-    ((gb * (max as u32)) >> 16) as usize
-}
-
-/// Return the an index number from given seed,
-/// but with a limitator
-fn seed_chance_bias(shift_by: u8, max: usize, seed: u32, bias: u16) -> Option<usize> {
-    let chance = seed_chance(shift_by, (max as u16 + bias) as usize, seed) as i32 - bias as i32;
-
-    if chance >= 0 {
-        Some(chance as usize)
-    } else {
-        None
     }
 }
 

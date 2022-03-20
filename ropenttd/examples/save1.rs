@@ -17,7 +17,7 @@ fn main() -> Result<(), String> {
     let cp = sv.company()
         .map_err(|e| e.to_string())?;
 
-    println!("{}", cp.name);
+    println!("{:?}", cp);
 
     Ok(())
 }

@@ -5,6 +5,7 @@ use crate::error::Error;
 use crate::string_reader::*;
 
 /// Company informations
+#[derive(Debug)]
 pub struct CompanyInfo {
     pub name: String,
     pub president: String

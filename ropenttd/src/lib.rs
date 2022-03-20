@@ -12,6 +12,7 @@ mod chunk_reader;
 mod string_reader;
 mod names_generators;
 mod table;
+mod seeds;
 
 pub use format::Format;
 pub use save::SaveGame;
