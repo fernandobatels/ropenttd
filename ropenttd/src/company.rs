@@ -3,12 +3,14 @@
 use crate::chunk_reader::ChunkReader;
 use crate::error::Error;
 use crate::string_reader::*;
+use crate::money::{Money, currencies};
 
 /// Company informations
 #[derive(Debug)]
 pub struct CompanyInfo {
     pub name: String,
-    pub president: String
+    pub president: String,
+    pub money: Money
 }
 
 impl CompanyInfo {
@@ -46,9 +48,18 @@ impl CompanyInfo {
             }
         };
 
+        chunk.advance::<u32>()?; // President face
+
+        // Company total money
+        let money = {
+            let money = chunk.fetch::<i64>()?;
+            Money::new(money, currencies::GBP)
+        };
+
         Ok(CompanyInfo {
             name,
-            president
+            president,
+            money
         })
     }
 }
@@ -62,6 +73,7 @@ pub trait Company {
 #[cfg(test)]
 mod test {
 
+    use crate::money::currencies;
     use crate::company::CompanyInfo;
 
     /// When you change the original name
@@ -89,6 +101,19 @@ mod test {
 
         assert_eq!("Petfield Transport".to_string(), company.name);
         assert_eq!("D. Nelson".to_string(), company.president);
+
+        Ok(())
+    }
+
+    /// Company money
+    #[test]
+    fn money() -> Result<(), String> {
+
+        let company = CompanyInfo::parse(&PLYR.to_vec())
+            .map_err(|e| e.to_string())?;
+
+        assert_eq!(3_647_337, company.money.value);
+        assert_eq!(14_589_348, company.money.exchange(currencies::BRL).value);
 
         Ok(())
     }

@@ -13,8 +13,10 @@ mod string_reader;
 mod names_generators;
 mod table;
 mod seeds;
+mod money;
 
 pub use format::Format;
 pub use save::SaveGame;
 pub use company::{Company, CompanyInfo};
 pub use error::Error;
+pub use money::{Money, Currency, currencies};
