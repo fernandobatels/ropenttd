@@ -12,7 +12,8 @@ use crate::error::Error;
 
 /// Chunk reader API
 pub struct ChunkReader {
-    raw: Mutex<Bytes>
+    raw: Mutex<Bytes>,
+    pub len: usize
 }
 
 impl ChunkReader {
@@ -38,13 +39,13 @@ impl ChunkReader {
         chunk.advance(2); // Some bytes not understood yet
 
         Ok(ChunkReader {
-            raw: Mutex::new(chunk)
+            raw: Mutex::new(chunk),
+            len: buffer.len()
         })
     }
 
     /// Advance de cursor to the next value
     /// without return anything
-    #[allow(dead_code)]
     pub fn advance<T>(&mut self) -> Result<(), Error>
         where T: ChunkDataReader<T>
     {
@@ -61,6 +62,19 @@ impl ChunkReader {
         let raw = self.raw.get_mut()?;
 
         T::fetch(raw)
+    }
+
+    /// Return the remaining number of bytes
+    pub fn remaining(&mut self) -> Result<usize, Error>
+    {
+        Ok(self.raw.get_mut()?.remaining())
+    }
+
+    /// Return the current buffer position
+    #[allow(dead_code)]
+    pub fn current_position(&mut self) -> Result<usize, Error>
+    {
+        Ok(self.len - self.remaining()?)
     }
 }
 
@@ -108,6 +122,13 @@ impl ChunkDataReader<i32> for i32 {
 impl ChunkDataReader<u32> for u32 {
     fn fetch(raw: &mut Bytes) -> Result<u32, Error> {
         Ok(raw.get_u32())
+    }
+}
+
+/// SLE_VAR_I64
+impl ChunkDataReader<i64> for i64 {
+    fn fetch(raw: &mut Bytes) -> Result<i64, Error> {
+        Ok(raw.get_i64())
     }
 }
 
