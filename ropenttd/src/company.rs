@@ -6,7 +6,7 @@ use crate::string_reader::*;
 use crate::money::{Money, currencies};
 
 /// Company informations
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CompanyInfo {
     /// Company name
     pub name: String,

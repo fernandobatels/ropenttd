@@ -15,6 +15,15 @@ pub struct SaveGame {
 
 impl SaveGame {
 
+    /// Load the save from a file
+    pub fn load_from_file(name: String) -> Result<SaveGame, Error> {
+        let f = File::open(name)
+            .map_err(|e| Error::Load(e.to_string()))?;
+        let mut bfr = BufReader::new(f);
+
+        Self::load(&mut bfr)
+    }
+
     /// Load the save from bytes
     pub fn load(bf_reader: &mut BufReader<File>) -> Result<SaveGame, Error> {
 

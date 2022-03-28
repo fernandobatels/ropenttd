@@ -14,6 +14,8 @@ mod names_generators;
 mod table;
 mod seeds;
 mod money;
+#[cfg(test)]
+pub mod tests;
 
 pub use format::Format;
 pub use save::SaveGame;
