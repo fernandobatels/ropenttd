@@ -19,6 +19,6 @@ pub mod tests;
 
 pub use format::Format;
 pub use save::SaveGame;
-pub use company::{Company, CompanyInfo};
+pub use company::Company;
 pub use error::Error;
 pub use money::{Money, Currency, currencies};

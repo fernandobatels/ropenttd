@@ -9,7 +9,7 @@ fn save1() -> Result<(), Error> {
 
     let cp = sv.company()?;
 
-    assert_eq!(CompanyInfo {
+    assert_eq!(Company {
         name: "Petfield Transport".to_string(),
         president: "D. Nelson".to_string(),
         money: Money {

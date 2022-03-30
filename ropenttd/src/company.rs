@@ -7,7 +7,7 @@ use crate::money::{Money, currencies};
 
 /// Company informations
 #[derive(Debug, PartialEq)]
-pub struct CompanyInfo {
+pub struct Company {
     /// Company name
     pub name: String,
     /// President name
@@ -20,10 +20,10 @@ pub struct CompanyInfo {
     pub inaugurated_year: u32,
 }
 
-impl CompanyInfo {
+impl Company {
 
     /// Parse the company information
-    pub fn parse(buffer: &Vec<u8>) -> Result<CompanyInfo, Error> {
+    pub fn parse(buffer: &Vec<u8>) -> Result<Company, Error> {
 
         let mut chunk = ChunkReader::find(buffer, "PLYR")?; // 50 4c 59 52
 
@@ -78,7 +78,7 @@ impl CompanyInfo {
         // Start company year
         let inaugurated_year = chunk.fetch::<u32>()?;
 
-        Ok(CompanyInfo {
+        Ok(Company {
             name,
             president,
             money,
@@ -88,17 +88,11 @@ impl CompanyInfo {
     }
 }
 
-/// Company access
-pub trait Company {
-    /// Return the company details/information
-    fn company(&mut self) -> Result<CompanyInfo, Error>;
-}
-
 #[cfg(test)]
 mod test {
 
     use crate::money::currencies;
-    use crate::company::CompanyInfo;
+    use crate::company::Company;
 
     /// When you change the original name
     #[test]
@@ -107,7 +101,7 @@ mod test {
         let mut buffer = [0x50, 0x4c, 0x59, 0x52, 0x1, 0x91, 0x33, 0x83, 0x2a, 0xa, 0xcb, 0x70, 0xea, 0x14, 0x50, 0x65, 0x74, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x20, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x70, 0x6f, 0x72, 0x74, 0x20, 0x32, 0x70, 0xe7, 0x1c, 0xb8, 0xed, 0x2d, 0x0, 0xc0, 0x8, 0x80].to_vec();
         buffer.resize_with(100, || 0x0);
 
-        let company = CompanyInfo::parse(&buffer)
+        let company = Company::parse(&buffer)
             .map_err(|e| e.to_string())?;
 
         assert_eq!("Petfield Transport 2".to_string(), company.name);
@@ -120,7 +114,7 @@ mod test {
     #[test]
     fn name_outside_plyr_chunk() -> Result<(), String> {
 
-        let company = CompanyInfo::parse(&PLYR.to_vec())
+        let company = Company::parse(&PLYR.to_vec())
             .map_err(|e| e.to_string())?;
 
         assert_eq!("Petfield Transport".to_string(), company.name);
@@ -134,7 +128,7 @@ mod test {
     #[test]
     fn money() -> Result<(), String> {
 
-        let company = CompanyInfo::parse(&PLYR.to_vec())
+        let company = Company::parse(&PLYR.to_vec())
             .map_err(|e| e.to_string())?;
 
         assert_eq!(3_647_337, company.money.value);
