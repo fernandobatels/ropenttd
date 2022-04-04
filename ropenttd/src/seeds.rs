@@ -2,12 +2,8 @@
 //!
 //! Original source:
 //! - https://github.com/OpenTTD/OpenTTD/blob/master/src/townname.cpp#L152
-//! - https://github.com/OpenTTD/OpenTTD/blob/master/src/core/bitmath_func.hpp#L32
 
-/// Fetch n bits from x, started at bit s.
-pub fn gb(x: u32, s: u8, n: u8) -> u32 {
-	  return (x >> s) & ((1 << n) - 1);
-}
+use crate::bitmath::gb;
 
 /// Return the an index number from given seed
 pub fn seed_chance(shift_by: u8, max: usize, seed: u32) -> usize {
