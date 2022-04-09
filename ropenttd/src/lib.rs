@@ -14,6 +14,7 @@ mod names_generators;
 mod table;
 mod seeds;
 mod money;
+mod bitmath;
 #[cfg(test)]
 pub mod tests;
 
