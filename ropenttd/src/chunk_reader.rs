@@ -7,6 +7,7 @@ use subslice::bmh;
 use bytes::{Bytes, Buf};
 use std::str;
 use std::sync::Mutex;
+use std::mem;
 
 use crate::bitmath::has_bit;
 use crate::error::Error;
@@ -15,7 +16,13 @@ use crate::error::Error;
 pub struct ChunkReader {
     raw: Mutex<Bytes>,
     /// Size of current chunk slice
-    pub gamma: usize
+    pub(crate) gamma: usize,
+    /// Type of this chunk
+    pub tp: ChunkType,
+    /// Bytes reads since start of slice
+    pub(crate) reads: usize,
+    /// Chunk size
+    pub size: usize
 }
 
 impl ChunkReader {
@@ -30,19 +37,20 @@ impl ChunkReader {
 
         let (_,chunk) = buffer.split_at(pos_init);
 
-        // We only support the CH_ARRAY and CH_SPARSE_ARRAY chunk types
-        if chunk[4] != 1 && chunk[4] != 2 {
-            return Err(Error::ChunkNotSupported(chunk_id.to_string()));
-        }
+        let tp = ChunkType::try_from(chunk[4])?;
+        let size = chunk.len();
 
         let mut chunk = Bytes::copy_from_slice(&chunk);
         chunk.advance(5); // chunk id + chunk type
 
-        let gamma = read_gamma(&mut chunk)? as usize;
+        let gamma = read_gamma(&mut chunk)? as usize - 1;
 
         Ok(ChunkReader {
             raw: Mutex::new(chunk),
-            gamma: gamma
+            gamma,
+            tp,
+            reads: 0,
+            size
         })
     }
 
@@ -50,14 +58,23 @@ impl ChunkReader {
     ///
     /// More about the chunk: https://github.com/OpenTTD/OpenTTD/blob/master/docs/savegame_format.md#chunks
     pub fn advance_slice(mut self) -> Result<Option<ChunkReader>, Error> {
+
         let mut raw = self.raw.get_mut()?;
-        raw.advance(self.gamma - 1);
 
-        self.gamma = read_gamma(&mut raw)? as usize;
+        let jump = self.gamma - self.reads;
+        if jump > raw.remaining() {
+            return Err(Error::DataCorruption(format!("Jumping more {} bytes, but chunk only have {} bytes remaining", jump, raw.remaining())));
+        }
 
-        if self.gamma == 0 {
+        raw.advance(jump);
+
+        let gamma = read_gamma(&mut raw)? as i32 - 1;
+        if gamma == -1 {
             return Ok(None);
         }
+
+        self.gamma = gamma as usize;
+        self.reads = 0;
 
         Ok(Some(self))
     }
@@ -79,7 +96,30 @@ impl ChunkReader {
     {
         let raw = self.raw.get_mut()?;
 
+        self.reads = self.reads + mem::size_of::<T>();
+
         T::fetch(raw)
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub enum ChunkType {
+    /// CH_ARRAY
+    Array = 1,
+    /// CH_SPARSE_ARRAY
+    SparseArray = 2
+}
+
+impl TryFrom<u8> for ChunkType {
+    type Error = Error;
+
+    fn try_from(tp: u8) -> Result<Self, Self::Error> {
+        // We only support the CH_ARRAY and CH_SPARSE_ARRAY chunk types
+        match tp {
+            1 => Ok(ChunkType::Array),
+            2 => Ok(ChunkType::SparseArray),
+            e => Err(Error::ChunkNotSupported(e))
+        }
     }
 }
 
@@ -182,6 +222,7 @@ mod test {
 
     use bytes::Bytes;
     use crate::chunk_reader::ChunkReader;
+    use crate::chunk_reader::ChunkType;
     use crate::chunk_reader::read_gamma;
 
     #[test]
@@ -190,7 +231,8 @@ mod test {
         let bytes = vec![0x50, 0x4c, 0x59, 0x52, 0x1, 0x91, 0x1f, 0x83, 0x2a];
         let mut chunk = ChunkReader::find(&bytes, "PLYR")
             .map_err(|e| e.to_string())?;
-        assert_eq!(4383, chunk.gamma);
+        assert_eq!(4382, chunk.gamma);
+        assert_eq!(ChunkType::Array, chunk.tp);
         assert_eq!(33578, chunk.fetch::<u16>().map_err(|e| e.to_string())?);
 
         Ok(())
@@ -203,17 +245,44 @@ mod test {
 
         let chunk = ChunkReader::find(&bytes, "VEHS")
             .map_err(|e| e.to_string())?;
-        assert_eq!(28, chunk.gamma);
+        assert_eq!(27, chunk.gamma);
+        assert_eq!(ChunkType::SparseArray, chunk.tp);
+        assert_eq!(0, chunk.reads);
 
         let chunk2 = chunk.advance_slice()
             .map_err(|e| e.to_string())?;
         assert_eq!(true, chunk2.is_some());
         let chunk2 = chunk2.unwrap();
-        assert_eq!(28, chunk2.gamma);
+        assert_eq!(27, chunk2.gamma);
 
         let chunk3 = chunk2.advance_slice()
             .map_err(|e| e.to_string())?;
         assert_eq!(false, chunk3.is_some());
+
+        Ok(())
+    }
+
+    #[test]
+    fn advance_slice_with_fetchs() -> Result<(), String> {
+
+        let bytes = vec![0x56, 0x45, 0x48, 0x53, 0x02, 0x1c, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0xff, 0x00, 0x00, 0x2d, 0x2e, 0x00, 0x00, 0x00, 0x4b, 0x0e, 0x77, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0x1c, 0x01, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x5f, 0x00, 0x00, 0x1c, 0x1e, 0x00, 0x00, 0x00, 0x5b, 0x0e, 0x7b, 0x06, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00];
+
+        let mut chunk = ChunkReader::find(&bytes, "VEHS")
+            .map_err(|e| e.to_string())?;
+        assert_eq!(27, chunk.gamma);
+        assert_eq!(0, chunk.reads);
+        assert_eq!(62, chunk.size);
+        assert_eq!(ChunkType::SparseArray, chunk.tp);
+        assert_eq!(0, chunk.fetch::<u8>().map_err(|e| e.to_string())?);
+        assert_eq!(1, chunk.reads);
+
+        let chunk2 = chunk.advance_slice()
+            .map_err(|e| e.to_string())?;
+        assert_eq!(true, chunk2.is_some());
+        let chunk2 = chunk2.unwrap();
+        assert_eq!(62, chunk2.size);
+        assert_eq!(27, chunk2.gamma);
+        assert_eq!(0, chunk2.reads);
 
         Ok(())
     }

@@ -16,7 +16,7 @@ pub enum Error {
     /// Chunk of data not found
     ChunkNotFound(String),
     /// Chunk, or chunk format, is not supported
-    ChunkNotSupported(String),
+    ChunkNotSupported(u8),
     /// Data is corrupted
     DataCorruption(String),
     /// Fail on lock the chunk
@@ -69,7 +69,7 @@ impl fmt::Display for Error {
             Error::UnexpectedValueType(exp, get) => format!("type fetched {}, expected {}", get, exp),
             Error::ChunkLockError => "Error on lock the chunk".to_string(),
             Error::ChunkNotFound(id) => format!("chunk id: {}", id),
-            Error::ChunkNotSupported(id) => format!("chunk id: {}", id),
+            Error::ChunkNotSupported(tp) => format!("chunk type: {}", tp),
             Error::Load(e) => e.to_string(),
             Error::DataCorruption(e) => e.to_string(),
             Error::Decompress(e) => e.to_string(),
