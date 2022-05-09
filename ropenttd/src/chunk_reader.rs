@@ -22,7 +22,9 @@ pub struct ChunkReader {
     /// Bytes reads since start of slice
     pub(crate) reads: usize,
     /// Chunk size
-    pub size: usize
+    pub size: usize,
+    /// Slice index
+    pub slice_idx: usize
 }
 
 impl ChunkReader {
@@ -44,13 +46,21 @@ impl ChunkReader {
         chunk.advance(5); // chunk id + chunk type
 
         let gamma = read_gamma(&mut chunk)? as usize - 1;
+        let remain_pre_idx = chunk.remaining();
+        let slice_idx = if tp == ChunkType::SparseArray {
+            read_gamma(&mut chunk)? as usize
+        } else {
+            0
+        };
+        let reads = remain_pre_idx - chunk.remaining();
 
         Ok(ChunkReader {
             raw: Mutex::new(chunk),
             gamma,
             tp,
-            reads: 0,
-            size
+            reads,
+            size,
+            slice_idx
         })
     }
 
@@ -74,7 +84,9 @@ impl ChunkReader {
         }
 
         self.gamma = gamma as usize;
-        self.reads = 0;
+        let remain_pre_idx = raw.remaining();
+        self.slice_idx = read_gamma(&mut raw)? as usize;
+        self.reads = remain_pre_idx - raw.remaining();
 
         Ok(Some(self))
     }
@@ -247,13 +259,15 @@ mod test {
             .map_err(|e| e.to_string())?;
         assert_eq!(27, chunk.gamma);
         assert_eq!(ChunkType::SparseArray, chunk.tp);
-        assert_eq!(0, chunk.reads);
+        assert_eq!(1, chunk.reads);
+        assert_eq!(0, chunk.slice_idx);
 
         let chunk2 = chunk.advance_slice()
             .map_err(|e| e.to_string())?;
         assert_eq!(true, chunk2.is_some());
         let chunk2 = chunk2.unwrap();
         assert_eq!(27, chunk2.gamma);
+        assert_eq!(1, chunk2.slice_idx);
 
         let chunk3 = chunk2.advance_slice()
             .map_err(|e| e.to_string())?;
@@ -270,11 +284,12 @@ mod test {
         let mut chunk = ChunkReader::find(&bytes, "VEHS")
             .map_err(|e| e.to_string())?;
         assert_eq!(27, chunk.gamma);
-        assert_eq!(0, chunk.reads);
+        assert_eq!(1, chunk.reads);
         assert_eq!(62, chunk.size);
         assert_eq!(ChunkType::SparseArray, chunk.tp);
-        assert_eq!(0, chunk.fetch::<u8>().map_err(|e| e.to_string())?);
-        assert_eq!(1, chunk.reads);
+        assert_eq!(4, chunk.fetch::<u8>().map_err(|e| e.to_string())?);
+        assert_eq!(2, chunk.reads);
+        assert_eq!(0, chunk.slice_idx);
 
         let chunk2 = chunk.advance_slice()
             .map_err(|e| e.to_string())?;
@@ -282,7 +297,8 @@ mod test {
         let chunk2 = chunk2.unwrap();
         assert_eq!(62, chunk2.size);
         assert_eq!(27, chunk2.gamma);
-        assert_eq!(0, chunk2.reads);
+        assert_eq!(1, chunk2.reads);
+        assert_eq!(1, chunk2.slice_idx);
 
         Ok(())
     }
