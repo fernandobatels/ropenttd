@@ -6,6 +6,7 @@ use std::fs::File;
 use crate::format::Format;
 use crate::error::Error;
 use crate::company::Company;
+use crate::vehicle::Vehicles;
 
 /// Save game
 pub struct SaveGame {
@@ -51,5 +52,10 @@ impl SaveGame {
     /// Return the company infos
     pub fn company(&mut self) -> Result<Company, Error> {
         Company::parse(&self.raw)
+    }
+
+    /// Return the vehicles list
+    pub fn vehicles(&mut self) -> Result<Vehicles, Error> {
+        Vehicles::parse(&self.raw)
     }
 }
