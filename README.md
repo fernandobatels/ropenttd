@@ -5,6 +5,15 @@
 
 A demonstration crate to read the [OpenTTD](https://github.com/OpenTTD/OpenTTD) save files. Only use this project with a backup copy of your saves.
 
+## Examples
+
+Default company info
+``` bash
+cargo run company saves/example1.sav
+ name                 inaugurated_year   president   currency   money     loan
+ Petfield Transport   1950               D. Nelson   GBP        3647337   0
+```
+
 ## TODO
 
 - [X] load save game ottx
@@ -27,4 +36,4 @@ A demonstration crate to read the [OpenTTD](https://github.com/OpenTTD/OpenTTD) 
 - [ ] support old save games
 - [ ] support other formats(ottd, ottn..)
 - [X] lib mode
-- [ ] bin mode
+- [X] cli mode

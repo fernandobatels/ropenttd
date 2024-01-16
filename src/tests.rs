@@ -31,7 +31,7 @@ fn save1() -> Result<(), Error> {
         inaugurated_year: 1950
     }, cp);
 
-    let vehicles = sv.vehicles()?;
+    //let vehicles = sv.vehicles()?;
 
     Ok(())
 }
